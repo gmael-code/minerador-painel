@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minerador de Criativos</title>
+<style>
+  :root{--bg:#0b0e14;--panel:#111725;--line:#1e2636;--txt:#e6edf7;--mut:#8592a6;
+    --green:#22c55e;--amber:#eab308;--red:#ef4444;--chip:#1a2334;--accent:#e11d48;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;display:flex;min-height:100vh}
+  .rail{width:66px;background:#0a0d13;border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:14px 0 30px;gap:3px;position:sticky;top:0;height:100vh;flex-shrink:0;overflow-y:auto}
+  .logo{width:40px;height:40px;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:#fff;margin-bottom:12px}
+  .ri{width:50px;padding:8px 0;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--mut);font-size:9.5px;cursor:pointer;transition:.15s;text-align:center}
+  .ri svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.8}
+  .ri:hover{background:#141a26;color:var(--txt)} .ri.on{color:var(--accent);background:#141a26}
+  .main{flex:1;padding:16px 22px 70px;max-width:1560px}
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+  .search{flex:1;min-width:240px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 15px;display:flex;align-items:center;gap:9px}
+  .search input{background:none;border:none;color:var(--txt);font-size:14px;outline:none;width:100%}
+  .search input::placeholder{color:var(--mut)}
+  select{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px;color:var(--txt);font-size:14px}
+  .stamp{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 15px;font-size:13px;color:var(--mut);display:flex;align-items:center;gap:8px}
+  .stamp b{color:var(--txt)} .dot{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(34,197,94,.15)}
+  .subtabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .tab{background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:7px 13px;font-size:12.5px;color:var(--mut);cursor:pointer}
+  .tab.on{background:#fff;color:#0b0e14;font-weight:700}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,1fr));gap:16px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+  .thumb{position:relative;aspect-ratio:1/1.05;background:#0d1420;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block} .thumb video{width:100%;height:100%;object-fit:cover;background:#000}
+  .semarte{color:#4b5a72;font-size:12px;z-index:1} .mono{position:absolute;font-size:52px;font-weight:800;color:#22304a}
+  .badge{position:absolute;top:9px;font-size:12px;font-weight:800;padding:3px 8px;border-radius:8px;color:#fff}
+  .score{left:9px;background:rgba(0,0,0,.6)} .score.hi{color:#4ade80}.score.md{color:#fde047}.score.lo{color:#cbd5e1}
+  .xn{right:9px;background:var(--accent);border-radius:999px}
+  .play{position:absolute;width:56px;height:56px;border-radius:50%;background:rgba(0,0,0,.45);border:2px solid #fff;display:flex;align-items:center;justify-content:center;cursor:pointer}
+  .play::after{content:"";border-left:17px solid #fff;border-top:10px solid transparent;border-bottom:10px solid transparent;margin-left:4px}
+  .vfac.on .play,.vfac.on img,.vfac.on .semarte,.vfac.on .mono{display:none}
+  .body{padding:12px 14px 10px;display:flex;flex-direction:column;gap:8px;flex:1}
+  .title{font-size:14.5px;font-weight:700;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .c{font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px}
+  .c.esc{background:rgba(34,197,94,.15);color:#4ade80}.c.med{background:rgba(234,179,8,.16);color:#facc15}
+  .c.bai{background:rgba(148,163,184,.15);color:#cbd5e1}.c.tag{background:var(--chip);color:#aab6c8}
+  .c.okk{background:transparent;color:#7c8aa0;border:1px solid var(--line)}
+  .c.fl{background:rgba(234,179,8,.16);color:#facc15}.c.ff{background:rgba(239,68,68,.16);color:#fca5a5}
+  .meta{font-size:12px;color:var(--mut)}
+  .foot{border-top:1px solid var(--line);padding:9px 14px;display:flex;align-items:center;gap:9px}
+  .av{width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;background:#33415a;position:relative;overflow:hidden}
+  .plogo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .adv{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+  .favb{cursor:pointer;color:var(--mut);font-size:15px} .favb.on{color:var(--accent)}
+  .ab{color:#8aa0c0;font-size:12.5px;text-decoration:none}
+  .casas-wrap{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;width:100%;grid-column:1/-1}
+  .pcasa{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 11px;cursor:pointer}
+  .pcasa:hover{border-color:#33415a}
+  .pcasa b{flex:1;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pcasa small{color:var(--mut);font-weight:800;font-size:12px}
+  #banner{margin-bottom:12px;font-size:13px;color:var(--mut)} .voltar{color:var(--accent);cursor:pointer;font-weight:600}
+  .analise{width:100%;grid-column:1/-1}
+  .asections{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:26px;align-items:start}
+  .asections section{min-width:0}
+  .akpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px;margin-bottom:22px}
+  .ak{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px}
+  .ak b{display:block;font-size:25px;font-weight:800} .ak span{color:var(--mut);font-size:12.5px}
+  .ah{font-size:15px;margin:6px 0 12px}
+  .arow{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+  .an{width:180px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+  .abar{flex:1;background:#0d1420;border-radius:6px;height:14px;overflow:hidden}
+  .abar i{display:block;height:100%;background:linear-gradient(90deg,#22c55e,#4ade80)}
+  .aq{width:44px;text-align:right;color:var(--mut);font-weight:700;font-size:12px}
+  .aleg{font-size:12px;color:var(--mut);margin:2px 0 10px;display:flex;gap:14px}
+  .aleg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:middle}
+  .mv{background:#4ade80}.mg{background:#64748b}
+  .mixbar{flex:1;display:flex;height:14px;border-radius:6px;overflow:hidden;background:#0d1420}
+  .mixbar .v{background:#4ade80}.mixbar .g{background:#64748b}
+  #status{text-align:center;color:var(--mut);padding:30px;font-size:14px} #sentinel{height:1px}
+</style>
+</head>
+<body>
+  <nav class="rail" id="rail">
+    <div class="logo">M</div>
+    <div class="ri on" data-f="refs"><svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6 4.4 2.3 7.2-6.3-4.6L5.7 21 8 14 2 9.6h7.6z"/></svg>Refs</div>
+    <div class="ri" data-f="todos"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Tudo</div>
+    <div class="ri" data-f="novos"><svg viewBox="0 0 24 24"><path d="M12 3v4M5 6l2 2M19 6l-2 2M4 13h16l-2 8H6z"/></svg>Novos</div>
+    <div class="ri" data-f="quente"><svg viewBox="0 0 24 24"><path d="M12 3c1 4-3 5-3 9a3 3 0 006 0c0-2-1-3-1-4 2 1 3 3 3 5a5 5 0 01-10 0c0-5 5-6 5-10z"/></svg>Quente</div>
+    <div class="ri" data-f="escalados"><svg viewBox="0 0 24 24"><path d="M12 4l7 7-7-2-7 2z"/><path d="M5 20h14"/></svg>Top</div>
+    <div class="ri" data-f="video"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/></svg>Vídeo</div>
+    <div class="ri" data-f="salvos"><svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 017-2 4 4 0 017 2c0 5.5-7 10-7 10z"/></svg>Salvos</div>
+    <div class="ri" data-f="casas"><svg viewBox="0 0 24 24"><path d="M3 21V7l9-4 9 4v14"/><path d="M9 21v-6h6v6"/></svg>Casas</div>
+    <div class="ri" data-f="analise"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 16v-5M12 16V8M16 16v-3"/></svg>Análise</div>
+    <div class="ri" data-f="mundo"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>Mundo</div>
+  </nav>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="search"><span>🔎</span><input id="q" placeholder="Buscar — casa, texto, promessa..."></div>
+      <select id="ord">
+        <option value="escala_score.desc.nullslast">Relevância</option>
+        <option value="dias_no_ar.asc.nullslast">Mais novos</option>
+        <option value="dias_no_ar.desc.nullslast">Mais tempo no ar</option>
+      </select>
+      <div class="stamp"><span class="dot"></span> <b id="atualiz">Atualizado</b> · <b id="total">…</b>&nbsp;criativos no banco</div>
+    </div>
+    <div class="subtabs" id="subtabs">
+      <div class="tab on" data-f="refs">Marcas de referência</div>
+      <div class="tab" data-f="novos">Novos</div>
+      <div class="tab" data-f="quente">🔥 Esquentando</div>
+      <div class="tab" data-f="todos">Tudo</div>
+      <div class="tab" data-f="escalados">Escalados</div>
+      <div class="tab" data-f="d15">15d+ no ar</div>
+      <div class="tab" data-f="video">Vídeo</div>
+      <div class="tab" data-f="imagem">Imagem</div>
+      <div class="tab" data-f="salvos">Salvos</div>
+      <div class="tab" data-f="enc">Encerrados</div>
+    </div>
+    <div id="banner"></div>
+    <div class="grid" id="grid"></div>
+    <div id="status">carregando…</div>
+    <div id="sentinel"></div>
+  </main>
+
+<script>
+const URL_="https://rylizwxolqyfsnnugajw.supabase.co", ANON="sb_publishable_u_c0-_w4juF04wRvRZrkQA_WWSScq4J", IMG="https://minerador-criativos.pages.dev/";
+const PAGE=30;
+let offset=0, filtro="refs", termo="", ordem="escala_score.desc.nullslast", carregando=false, acabou=false, total=null;
+const grid=document.getElementById('grid'), status=document.getElementById('status');
+let favs=new Set(JSON.parse(localStorage.getItem('minerador_favs')||'[]'));
+let casaSel=null;
+const EM_BREVE={};
+
+function queryURL(){
+  const base=URL_.replace(/\/$/,'');
+  if(filtro==="mundo"){
+    let u=base+"/rest/v1/criativos_mundo?select=*&order=dias_no_ar.desc.nullslast";
+    if(termo){const t=encodeURIComponent("*"+termo+"*");u+=`&or=(advertiser.ilike.${t},texto.ilike.${t})`;}
+    u+=`&limit=${PAGE}&offset=${offset}`; return u;
+  }
+  let u=base+"/rest/v1/criativos?select=*";
+  let ord=ordem;
+  if(filtro==="novos"){u+="&dias_no_ar=lte.3";ord="dias_no_ar.asc.nullslast";}
+  else if(filtro==="quente"){u+="&dias_no_ar=lte.7";ord="escala_score.desc.nullslast";}
+  else if(filtro==="escalados"){u+="&escala_tier=eq.ESCALADO";}
+  else if(filtro==="video"){u+="&midia=eq.video";}
+  else if(filtro==="imagem"){u+="&midia=neq.video";}
+  else if(filtro==="d15"){u+="&dias_no_ar=gte.15";}
+  else if(filtro==="casaview"){u+="&advertiser=eq."+encodeURIComponent(casaSel);}
+  else if(filtro==="enc"){u+="&no_ar=is.false";}
+  else if(filtro==="salvos"){const ids=[...favs];if(!ids.length)return null;u+="&library_id=in.("+ids.join(",")+")";}
+  u+="&order="+ord;
+  if(filtro!=="enc") u+="&no_ar=not.is.false";
+  if(termo){const t=encodeURIComponent("*"+termo+"*");u+=`&or=(advertiser.ilike.${t},texto.ilike.${t})`;}
+  u+=`&limit=${PAGE}&offset=${offset}`;
+  return u;
+}
+async function carregar(){
+  if(carregando||acabou) return;
+  if(filtro==="casas"){carregarCasas();return;}
+  if(filtro==="analise"){carregarAnalise();return;}
+  if(EM_BREVE[filtro]){status.textContent=EM_BREVE[filtro];acabou=true;return;}
+  carregando=true; if(!offset)status.textContent="carregando…";
+  const url=queryURL();
+  if(url===null){status.textContent="Nenhum salvo ainda. Clique no ♥ dos cards pra guardar.";acabou=true;carregando=false;return;}
+  try{
+    const r=await fetch(url,{headers:{apikey:ANON,Authorization:"Bearer "+ANON,Prefer:"count=planned"}});
+    if(!r.ok){status.textContent="erro ("+r.status+"): "+(await r.text()).slice(0,120);carregando=false;return;}
+    const cr=r.headers.get("content-range"); if(cr){const t=cr.split("/")[1]; if(t&&t!=="*")document.getElementById('total').textContent=Number(t).toLocaleString('pt-BR');}
+    const linhas=await r.json();
+    linhas.forEach(row=>grid.appendChild(montar(row)));
+    offset+=linhas.length;
+    if(linhas.length<PAGE) acabou=true;
+    status.textContent=acabou?(offset?`fim — ${offset} carregados`:"nada encontrado"):"";
+  }catch(e){status.textContent="erro: "+e.message;}
+  carregando=false;
+}
+function tierCls(t){t=(t||"").toUpperCase();if(t==="ESCALADO")return["esc","Escalado"];if(t==="ALTA")return["esc","Alta"];if(t==="MEDIA"||t==="MÉDIA")return["med","Média"];return["bai","Baixa"];}
+function compCls(s){s=(s||"");if(s.indexOf("FORTE")>=0)return["ff",s];if(s.indexOf("FLAG")>=0)return["fl","FLAG LEVE"];return["okk","LEGENDA OK"];}
+function montar(row){
+  const d=row.dados||row, el=document.createElement('article'); el.className='card';
+  const [tc,tn]=tierCls(row.escala_tier||d.escala_tier), [cc,cn]=compCls(row.compliance_status||d.compliance_status);
+  const score=row.escala_score??d.escala_score??0, sc=score>=90?'hi':score>=70?'md':'lo';
+  const versoes=d.versoes||1, inicial=((row.advertiser||d.advertiser||'?')[0]||'?').toUpperCase();
+  const arte=d._arte?IMG+d._arte:"", video=d._video?IMG+d._video:"";
+  const titulo=(d.texto||d.conceito||row.advertiser||'').toString();
+  const lid=row.library_id;
+  let visual = arte
+    ? `<img loading="lazy" src="${arte}" onerror="this.style.display='none';this.parentNode.querySelector('.mono').style.display='block';this.parentNode.querySelector('.semarte').style.display='block'" alt=""><span class="mono" style="display:none">${inicial}</span><span class="semarte" style="display:none">arte não capturada</span>`
+    : `<span class="mono">${inicial}</span><span class="semarte">arte não capturada</span>`;
+  const badges=`<span class="badge score ${sc}">${score}</span>`+(versoes>1?`<span class="badge xn">×${versoes}</span>`:'');
+  if(video){
+    el.innerHTML=`<div class="thumb vfac" data-v="${video}" data-lib="${lid}">${visual}${badges}<span class="play"></span></div>`+corpo(row,d,tc,tn,cc,cn,titulo,inicial,lid);
+    const fac=el.querySelector('.vfac');
+    fac.addEventListener('click',e=>{if(e.target.closest('.favb'))return;if(fac.querySelector('video'))return;
+      const v=document.createElement('video');v.controls=true;v.autoplay=true;v.playsInline=true;v.src=fac.dataset.v;
+      v.addEventListener('error',()=>{v.remove();fac.classList.remove('on');window.open('https://www.facebook.com/ads/library/?id='+fac.dataset.lib,'_blank');},{once:true});
+      fac.prepend(v);fac.classList.add('on');});
+  } else {
+    el.innerHTML=`<a class="thumb" href="https://www.facebook.com/ads/library/?id=${lid}" target="_blank" rel="noopener">${visual}${badges}</a>`+corpo(row,d,tc,tn,cc,cn,titulo,inicial,lid);
+  }
+  const fb=el.querySelector('.favb');
+  fb.addEventListener('click',()=>{if(favs.has(lid))favs.delete(lid);else favs.add(lid);localStorage.setItem('minerador_favs',JSON.stringify([...favs]));fb.classList.toggle('on',favs.has(lid));});
+  return el;
+}
+function corpo(row,d,tc,tn,cc,cn,titulo,inicial,lid){
+  const cat=d.categoria?`<span class="c tag">${d.categoria}</span>`:'';
+  const dias=(row.dias_no_ar??d.dias_no_ar??0), usam=d.versoes||1, nota=(row.compliance_nota??d.compliance_nota??'—');
+  const fav=favs.has(lid)?'on':'';
+  return `<div class="body"><div class="title">${esc(titulo)}</div>
+    <div class="chips"><span class="c ${tc}">${tn}</span>${cat}<span class="c ${cc}">${cn}</span></div>
+    <div class="meta">▸ compliance ${nota}/100 · ${dias}d no ar · ${usam} anúncio(s)</div></div>
+  <div class="foot"><div class="av"><img class="plogo" src="${IMG}logos/${slug(row.advertiser||d.advertiser||'')}.png" onerror="this.remove()"><span>${inicial}</span></div><div class="adv">${esc(row.advertiser||d.advertiser||'')}</div>
+    <span class="favb ${fav}">♥</span>
+    <a class="ab" href="https://www.facebook.com/ads/library/?id=${lid}" target="_blank" rel="noopener">abrir ↗</a></div>`;
+}
+function esc(s){return (s||'').toString().replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function slug(nome){return (nome||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'x';}
+async function carregarCasas(){
+  acabou=true; grid.innerHTML=''; document.getElementById('banner').innerHTML=""; status.textContent="carregando casas\u2026";
+  try{
+    const r=await fetch(URL_.replace(/\/$/,'')+"/rest/v1/casas_lista?limit=2000",{headers:{apikey:ANON,Authorization:"Bearer "+ANON}});
+    if(!r.ok){status.textContent="Falta criar a view 'casas_lista' no Supabase (rode o SQL que te passei).";return;}
+    const casas=await r.json();
+    const wrap=document.createElement('div'); wrap.className='casas-wrap';
+    casas.forEach(c=>{
+      const adv=c.advertiser||'', el=document.createElement('div'); el.className='pcasa';
+      el.innerHTML=`<div class="av"><img class="plogo" src="${IMG}logos/${slug(adv)}.png" onerror="this.remove()"><span>${(adv[0]||'?').toUpperCase()}</span></div><b>${esc(adv)}</b><small>${c.qtd}</small>`;
+      el.addEventListener('click',()=>{casaSel=adv;marcar('casaview');});
+      wrap.appendChild(el);
+    });
+    grid.appendChild(wrap);
+    status.textContent=`${casas.length} casas`;
+  }catch(e){status.textContent="erro: "+e.message;}
+}
+async function carregarAnalise(){
+  acabou=true; grid.innerHTML=''; document.getElementById('banner').innerHTML=''; status.textContent='carregando análise…';
+  try{
+    const h={apikey:ANON,Authorization:"Bearer "+ANON}, base=URL_.replace(/\/$/,'');
+    const g=p=>fetch(base+p,{headers:h}).then(r=>r.ok?r.json():[]);
+    const [ra,casas,temas,mix]=await Promise.all([
+      fetch(base+"/rest/v1/analise_resumo",{headers:h}).then(r=>r.ok?r.json():null),
+      g("/rest/v1/casas_lista?limit=20"),
+      g("/rest/v1/temas_lista?limit=15"),
+      g("/rest/v1/mix_casa?limit=12")
+    ]);
+    if(!ra){status.textContent="Falta criar as views no Supabase (rode o SQL que te passei).";return;}
+    const a=ra[0]||{};
+    const pctVid=a.ativos?Math.round(a.videos/a.ativos*100):0;
+    const kpis=[['criativos ativos',a.ativos],['casas ativas',a.casas_ativas],['em vídeo',pctVid+'%'],['novos (48h)',a.novos],['15d+ no ar',a.d15],['média dias no ar',(a.media_dias||0)+'d'],['encerrados',a.encerrados]];
+    const fmt=v=>v==null?'—':(typeof v==='number'?v.toLocaleString('pt-BR'):v);
+    const kpiHTML=kpis.map(k=>`<div class="ak"><b>${fmt(k[1])}</b><span>${k[0]}</span></div>`).join('');
+    const bars=(arr,nome,q,max)=>arr.map(x=>`<div class="arow"><span class="an">${esc(x[nome])}</span><div class="abar"><i style="width:${max?Math.round(x[q]/max*100):0}%"></i></div><span class="aq">${x[q]}</span></div>`).join('');
+    const maxc=casas.length?casas[0].qtd:1, maxt=temas.length?temas[0].qtd:1;
+    const mixHTML=mix.map(m=>{const t=m.total||1;return `<div class="arow"><span class="an">${esc(m.advertiser)}</span><div class="mixbar"><div class="v" style="width:${Math.round(m.vid/t*100)}%"></div><div class="g" style="width:${Math.round(m.img/t*100)}%"></div></div><span class="aq">${m.total}</span></div>`;}).join('');
+    grid.innerHTML=`<div class="analise">
+      <div class="akpis">${kpiHTML}</div>
+      <div class="asections">
+        <section><h3 class="ah">Casas por volume de criativos</h3>${bars(casas,'advertiser','qtd',maxc)}</section>
+        <section><h3 class="ah">Temas mais usados</h3>${bars(temas,'categoria','qtd',maxt)}</section>
+        <section><h3 class="ah">Vídeo × imagem por casa</h3>
+          <div class="aleg"><span><i class="mv"></i>vídeo</span><span><i class="mg"></i>imagem</span></div>${mixHTML}</section>
+      </div>
+    </div>`;
+    status.textContent='';
+  }catch(e){status.textContent="erro: "+e.message;}
+}
+function resetar(){offset=0;acabou=false;grid.innerHTML='';carregar();}
+function marcar(f){filtro=f;
+  const hl=f==='casaview'?'casas':f;
+  document.querySelectorAll('.ri,.tab').forEach(x=>x.classList.toggle('on',x.dataset.f===hl));
+  document.getElementById('banner').innerHTML = f==='casaview' ? `<span class="voltar">← todas as casas</span> · <b style="color:var(--txt)">${esc(casaSel)}</b>` : "";
+  resetar();}
+document.getElementById('banner').addEventListener('click',e=>{if(e.target.closest('.voltar'))marcar('casas');});
+document.getElementById('rail').addEventListener('click',e=>{const t=e.target.closest('.ri');if(t&&t.dataset.f)marcar(t.dataset.f);});
+document.getElementById('subtabs').addEventListener('click',e=>{const t=e.target.closest('.tab');if(t&&t.dataset.f)marcar(t.dataset.f);});
+let deb; document.getElementById('q').addEventListener('input',e=>{clearTimeout(deb);deb=setTimeout(()=>{termo=e.target.value.trim();resetar();},350);});
+document.getElementById('ord').addEventListener('change',e=>{ordem=e.target.value;resetar();});
+async function carregarStatus(){
+  try{
+    const r=await fetch(URL_.replace(/\/$/,'')+"/rest/v1/criativos?select=atualizado_em&order=atualizado_em.desc&limit=1",{headers:{apikey:ANON,Authorization:"Bearer "+ANON}});
+    const j=await r.json();
+    if(j&&j[0]&&j[0].atualizado_em){
+      const mins=Math.floor((Date.now()-new Date(j[0].atualizado_em))/60000);
+      const t=mins<1?"agora":mins<60?`há ${mins} min`:mins<1440?`há ${Math.floor(mins/60)}h`:`há ${Math.floor(mins/1440)}d`;
+      document.getElementById('atualiz').textContent="Atualizado "+t;
+    }
+  }catch(e){}
+}
+new IntersectionObserver(es=>{if(es[0].isIntersecting)carregar();},{rootMargin:"600px"}).observe(document.getElementById('sentinel'));
+carregarStatus();
+carregar();
+</script>
+</body>
+</html>
